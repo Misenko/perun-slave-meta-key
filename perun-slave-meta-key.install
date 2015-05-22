@@ -1,0 +1,26 @@
+COMMENT='# The following ssh key was added by perun-slave-meta-key package'
+KEY='from="perun.ics.muni.cz",command="/opt/perun/bin/perun" ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC26+QiDtZ3bnLiLllySgsImSPUX0/sFBmo//3PmqOsuJIBdWB5BLU5Ws+pTRxefqC8SHfI92ZQoGXe7aJniTXxbRPa0FZJ3fskAHwpbiJfstGVZ1hddBcHIvial3v5Rd++zRiKslDVTkXLlb+b1pTnjyTVbD/6kGILgnUz7RKY5DnXADVnmTdPliQCabhE41AhkWdcuWpHBNwvxONKoZJJpbuouDbcviX4lJu9TF9Ij62rZjcoNzg5/JiIKTcMVi8L04FTjyCMxKRzlo00IjSuapFnXQNNZUL5u/mfPA/HpyIkSAOiPXLhWy9UuBNo7xdrCmfTh1qUvzbuWXJZN3d9 perunv3@perun.ics.muni.cz'
+TARGETDIR=/root/.ssh
+
+post_install() {
+	mkdir -p $TARGETDIR
+	if grep -qs "$KEY" $TARGETDIR/authorized_keys; then
+		if grep -qs "$COMMENT" $TARGETDIR/authorized_keys; then 
+			exit 0
+		else
+			sed -i "/from=\"perun\.ics\.muni\.cz\"/i$COMMENT" $TARGETDIR/authorized_keys
+		fi
+	else 
+		echo -e "$COMMENT\n$KEY" >> $TARGETDIR/authorized_keys
+	fi
+}
+
+post_upgrade() {
+	post_remove
+	post_install
+}
+
+post_remove() {
+	sed -i "/from=\"perun.ics.muni.cz\",command=\"\/opt\/perun\/bin\/perun\"/d" $TARGETDIR/authorized_keys
+	sed -i "/perun-slave-meta-key package/d" $TARGETDIR/authorized_keys
+}
